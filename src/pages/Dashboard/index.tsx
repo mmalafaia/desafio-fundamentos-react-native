@@ -26,6 +26,7 @@ interface Product {
   title: string;
   image_url: string;
   price: number;
+  formattedPrice: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -35,7 +36,14 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     async function loadProducts(): Promise<void> {
-      // TODO
+      const response = await api.get('/products');
+
+      const productsFormatted = response.data.map((product: Product) => ({
+        ...product,
+        formattedPrice: formatValue(product.price),
+      }));
+
+      setProducts(productsFormatted);
     }
 
     loadProducts();
@@ -60,7 +68,7 @@ const Dashboard: React.FC = () => {
               <ProductImage source={{ uri: item.image_url }} />
               <ProductTitle>{item.title}</ProductTitle>
               <PriceContainer>
-                <ProductPrice>{formatValue(item.price)}</ProductPrice>
+                <ProductPrice>{item.formattedPrice}</ProductPrice>
                 <ProductButton
                   testID={`add-to-cart-${item.id}`}
                   onPress={() => handleAddToCart(item)}
