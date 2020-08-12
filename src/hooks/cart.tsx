@@ -30,10 +30,12 @@ const CartProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function loadProducts(): Promise<void> {
-      const user = await AsyncStorage.getItem('@GoMarketplace:cart');
+      const storagedProducts = await AsyncStorage.getItem(
+        '@GoMarketplace:cart',
+      );
 
-      if (user) {
-        setProducts(JSON.parse(user));
+      if (storagedProducts) {
+        setProducts(JSON.parse(storagedProducts));
       }
     }
 
@@ -42,16 +44,11 @@ const CartProvider: React.FC = ({ children }) => {
 
   const addToCart = useCallback(
     async product => {
-      const newProduct: Product = {
-        ...product,
-        quantity: 1,
-      };
-
       setProducts(state => {
         const indexOf = state.findIndex(index => index.id === product.id);
 
         if (indexOf === -1) {
-          return [...state, newProduct];
+          return [...state, { ...product, quantity: 1 }];
         }
 
         const newState = state.map(index => {
@@ -77,19 +74,11 @@ const CartProvider: React.FC = ({ children }) => {
 
   const increment = useCallback(
     async id => {
-      setProducts(state => {
-        const newState = state.map(index => {
-          if (index.id === id) {
-            return {
-              ...index,
-              quantity: index.quantity + 1,
-            };
-          }
-          return index;
-        });
-
-        return [...newState];
-      });
+      setProducts(state =>
+        state.map(index =>
+          index.id === id ? { ...index, quantity: index.quantity + 1 } : index,
+        ),
+      );
 
       await AsyncStorage.setItem(
         '@GoMarketplace:cart',
